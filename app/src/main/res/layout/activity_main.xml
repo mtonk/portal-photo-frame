@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    android:keepScreenOn="true">
+
+    <!-- Current slideshow image (full-bleed) -->
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:contentDescription="Slideshow image" />
+
+    <!-- Crossfade second image -->
+    <ImageView
+        android:id="@+id/imageViewNext"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:alpha="0"
+        android:contentDescription="Next slideshow image" />
+
+    <!-- Empty state (offset below Portal system overlay) -->
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingTop="@dimen/portal_system_overlay_padding"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🖼️"
+            android:textSize="64sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_images"
+            android:textColor="#AAAAAA"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:id="@+id/serverUrlText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#03DAC5"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:layout_marginTop="24dp" />
+    </LinearLayout>
+
+    <!-- Pause indicator -->
+    <TextView
+        android:id="@+id/pauseIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="@dimen/portal_system_overlay_padding"
+        android:background="#80000000"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="8dp"
+        android:text="@string/paused"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+    <!-- Image counter -->
+    <TextView
+        android:id="@+id/imageCounter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:background="#80000000"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp"
+        android:textColor="#AAAAAA"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <!-- Overlay controls (shown on tap) -->
+    <LinearLayout
+        android:id="@+id/controlsOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#80000000"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/btnPrev"
+            android:layout_width="@dimen/portal_touch_target_size"
+            android:layout_height="@dimen/portal_touch_target_size"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_previous"
+            android:contentDescription="Previous"
+            android:layout_marginEnd="16dp" />
+
+        <ImageButton
+            android:id="@+id/btnPlayPause"
+            android:layout_width="@dimen/portal_touch_target_size"
+            android:layout_height="@dimen/portal_touch_target_size"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_pause"
+            android:contentDescription="Play/Pause"
+            android:layout_marginEnd="16dp" />
+
+        <ImageButton
+            android:id="@+id/btnNext"
+            android:layout_width="@dimen/portal_touch_target_size"
+            android:layout_height="@dimen/portal_touch_target_size"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_next"
+            android:contentDescription="Next"
+            android:layout_marginEnd="16dp" />
+
+        <ImageButton
+            android:id="@+id/btnSettings"
+            android:layout_width="@dimen/portal_touch_target_size"
+            android:layout_height="@dimen/portal_touch_target_size"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_preferences"
+            android:contentDescription="Settings"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/overlayIpText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#03DAC5"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+</FrameLayout>

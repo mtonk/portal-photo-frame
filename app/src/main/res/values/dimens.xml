@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Meta Portal system overlay occupies the top 64dp -->
+    <dimen name="portal_system_overlay_padding">64dp</dimen>
+    <dimen name="portal_touch_target_size">52dp</dimen>
+</resources>

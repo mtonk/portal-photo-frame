@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Photo Frame</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --text: #e4e4e7;
+    --text-dim: #71717a;
+    --accent: #06b6d4;
+    --accent-hover: #22d3ee;
+    --danger: #ef4444;
+    --danger-hover: #f87171;
+    --success: #22c55e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .header h1 span { color: var(--accent); }
+
+  .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    background: var(--success);
+    animation: pulse 2s infinite;
+  }
+
+  .status-dot.paused { background: #eab308; animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* Controls Panel */
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn.primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+  .btn.danger { border-color: var(--danger); color: var(--danger); }
+  .btn.danger:hover { background: var(--danger); color: #fff; }
+
+  .controls-sep {
+    width: 1px; height: 32px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+
+  /* Settings Row */
+  .settings-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    flex-wrap: wrap;
+  }
+
+  .setting-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .setting-group label {
+    font-size: 13px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .setting-group select, .setting-group input[type="number"] {
+    padding: 6px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  .setting-group select:focus, .setting-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  /* Upload Area */
+  .upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 48px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 24px;
+    background: var(--surface);
+  }
+
+  .upload-area:hover, .upload-area.dragover {
+    border-color: var(--accent);
+    background: rgba(6, 182, 212, 0.05);
+  }
+
+  .upload-area .icon { font-size: 36px; margin-bottom: 12px; }
+  .upload-area p { color: var(--text-dim); font-size: 14px; }
+  .upload-area .hint { margin-top: 8px; font-size: 12px; color: var(--text-dim); opacity: 0.7; }
+
+  .upload-progress {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  /* Image Grid */
+  .section-title {
+    font-size: 14px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .image-card {
+    position: relative;
+    aspect-ratio: 4/3;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .image-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  .image-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  .image-card img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+
+  .image-card .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 50%, rgba(0,0,0,0.7));
+    opacity: 0;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: flex-end;
+    padding: 8px;
+  }
+
+  .image-card:hover .overlay { opacity: 1; }
+
+  .image-card .delete-btn {
+    margin-left: auto;
+    padding: 4px 10px;
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .image-card .delete-btn:hover { background: var(--danger-hover); }
+
+  .image-card .index-badge {
+    position: absolute;
+    top: 6px; left: 6px;
+    background: rgba(0,0,0,0.7);
+    color: var(--text-dim);
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 64px 24px;
+    color: var(--text-dim);
+  }
+
+  .empty .icon { font-size: 48px; margin-bottom: 16px; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: transform 0.3s;
+    z-index: 200;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox.open { display: flex; }
+
+  .lightbox img {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+  }
+
+  .lightbox .close-btn {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 32px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 12px; }
+    .controls { flex-direction: column; align-items: stretch; }
+    .controls-sep { display: none; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .upload-area { padding: 32px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>&#9654;</span> Portal Photo Frame</h1>
+  <div id="statusBadge">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Playing</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn" onclick="control('prev')">&#9664; Prev</button>
+    <button class="btn primary" id="playPauseBtn" onclick="control('playpause')">&#10074;&#10074; Pause</button>
+    <button class="btn" onclick="control('next')">Next &#9654;</button>
+    <div class="controls-sep"></div>
+    <div class="setting-group">
+      <label>Duration:</label>
+      <select id="durationSelect" onchange="updateSettings()">
+        <option value="3">3s</option>
+        <option value="5">5s</option>
+        <option value="7">7s</option>
+        <option value="10" selected>10s</option>
+        <option value="15">15s</option>
+        <option value="20">20s</option>
+        <option value="30">30s</option>
+        <option value="45">45s</option>
+        <option value="60">1 min</option>
+        <option value="90">1.5 min</option>
+        <option value="120">2 min</option>
+        <option value="300">5 min</option>
+      </select>
+    </div>
+    <div class="setting-group">
+      <label>Transition:</label>
+      <select id="transitionSelect" onchange="updateSettings()">
+        <option value="crossfade">Crossfade</option>
+        <option value="slide">Slide</option>
+        <option value="none">None</option>
+      </select>
+    </div>
+    <div class="setting-group">
+      <label>
+        <input type="checkbox" id="shuffleCheck" onchange="updateSettings()"> Shuffle
+      </label>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+    <div class="icon">&#128247;</div>
+    <p>Drop images here or click to upload</p>
+    <p class="hint">Supports JPG, PNG, WebP, GIF, BMP</p>
+    <div class="upload-progress" id="uploadProgress">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="uploadFiles(this.files)">
+
+  <!-- Gallery -->
+  <div class="section-title" id="galleryTitle">Images (0)</div>
+  <div class="grid" id="imageGrid"></div>
+  <div class="empty" id="emptyState" style="display:none">
+    <div class="icon">&#128444;</div>
+    <p>No images yet. Upload some to get started.</p>
+  </div>
+
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="close-btn" onclick="closeLightbox()">&times;</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentStatus = { playing: true, currentIndex: 0, totalImages: 0 };
+
+  // -- Init --
+  loadSettings();
+  loadImages();
+  loadStatus();
+  setInterval(loadStatus, 3000);
+
+  // -- Drag & Drop --
+  const uploadArea = document.getElementById('uploadArea');
+  ['dragenter', 'dragover'].forEach(e => {
+    uploadArea.addEventListener(e, ev => { ev.preventDefault(); uploadArea.classList.add('dragover'); });
+  });
+  ['dragleave', 'drop'].forEach(e => {
+    uploadArea.addEventListener(e, ev => { ev.preventDefault(); uploadArea.classList.remove('dragover'); });
+  });
+  uploadArea.addEventListener('drop', ev => {
+    const files = ev.dataTransfer.files;
+    if (files.length > 0) uploadFiles(files);
+  });
+
+  // -- API --
+  async function loadImages() {
+    try {
+      const res = await fetch('/api/images');
+      const data = await res.json();
+      renderGrid(data.images || []);
+    } catch (e) {
+      console.error('Failed to load images', e);
+    }
+  }
+
+  async function loadSettings() {
+    try {
+      const res = await fetch('/api/settings');
+      const data = await res.json();
+      document.getElementById('durationSelect').value = data.duration || 10;
+      document.getElementById('transitionSelect').value = data.transition || 'crossfade';
+      document.getElementById('shuffleCheck').checked = data.shuffle || false;
+    } catch (e) {}
+  }
+
+  async function loadStatus() {
+    try {
+      const res = await fetch('/api/status');
+      currentStatus = await res.json();
+      updateStatusUI();
+    } catch (e) {}
+  }
+
+  async function updateSettings() {
+    const settings = {
+      duration: parseInt(document.getElementById('durationSelect').value),
+      transition: document.getElementById('transitionSelect').value,
+      shuffle: document.getElementById('shuffleCheck').checked
+    };
+    try {
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+      showToast('Settings updated');
+    } catch (e) {
+      showToast('Failed to update settings');
+    }
+  }
+
+  async function control(action) {
+    try {
+      const res = await fetch('/api/control/' + action, { method: 'POST' });
+      const data = await res.json();
+      currentStatus.playing = data.playing;
+      updateStatusUI();
+      setTimeout(loadStatus, 500);
+    } catch (e) {
+      showToast('Failed: ' + action);
+    }
+  }
+
+  async function deleteImage(name) {
+    if (!confirm('Delete this image?')) return;
+    try {
+      await fetch('/api/images/' + encodeURIComponent(name), { method: 'DELETE' });
+      showToast('Image deleted');
+      loadImages();
+      loadStatus();
+    } catch (e) {
+      showToast('Failed to delete');
+    }
+  }
+
+  async function uploadFiles(files) {
+    const formData = new FormData();
+    let imageCount = 0;
+    for (const file of files) {
+      if (file.type.startsWith('image/')) {
+        formData.append('file' + imageCount, file);
+        imageCount++;
+      }
+    }
+    if (imageCount === 0) {
+      showToast('No valid images selected');
+      return;
+    }
+
+    const progress = document.getElementById('uploadProgress');
+    const fill = document.getElementById('progressFill');
+    progress.style.display = 'block';
+    fill.style.width = '0%';
+
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload');
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          fill.style.width = Math.round((e.loaded / e.total) * 100) + '%';
+        }
+      };
+
+      xhr.onload = () => {
+        progress.style.display = 'none';
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText);
+          var msg = data.uploaded + ' image(s) uploaded';
+          if (data.skipped > 0) msg += ', ' + data.skipped + ' duplicate(s) skipped';
+          showToast(msg);
+          loadImages();
+          loadStatus();
+        } else {
+          showToast('Upload failed');
+        }
+        document.getElementById('fileInput').value = '';
+      };
+
+      xhr.onerror = () => {
+        progress.style.display = 'none';
+        showToast('Upload failed');
+        document.getElementById('fileInput').value = '';
+      };
+
+      xhr.send(formData);
+    } catch (e) {
+      progress.style.display = 'none';
+      showToast('Upload error');
+    }
+  }
+
+  // -- Rendering --
+  function renderGrid(images) {
+    const grid = document.getElementById('imageGrid');
+    const empty = document.getElementById('emptyState');
+    const title = document.getElementById('galleryTitle');
+
+    title.textContent = 'Images (' + images.length + ')';
+
+    if (images.length === 0) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    grid.innerHTML = images.map((img, i) => {
+      const isActive = i === currentStatus.currentIndex;
+      return '<div class="image-card' + (isActive ? ' active' : '') + '">' +
+        '<img src="/api/thumbs/' + encodeURIComponent(img.name) + '" ' +
+        'loading="lazy" alt="" onclick="openLightbox(\'' + encodeURIComponent(img.name) + '\')">' +
+        '<span class="index-badge">' + (i + 1) + '</span>' +
+        '<div class="overlay">' +
+        '<button class="delete-btn" onclick="event.stopPropagation();deleteImage(\'' +
+        img.name.replace(/'/g, "\\'") + '\')">Delete</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  function updateStatusUI() {
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    const btn = document.getElementById('playPauseBtn');
+
+    if (currentStatus.playing) {
+      dot.className = 'status-dot';
+      text.textContent = 'Playing ' + (currentStatus.currentIndex + 1) + '/' + currentStatus.totalImages;
+      btn.innerHTML = '&#10074;&#10074; Pause';
+    } else {
+      dot.className = 'status-dot paused';
+      text.textContent = 'Paused ' + (currentStatus.currentIndex + 1) + '/' + currentStatus.totalImages;
+      btn.innerHTML = '&#9654; Play';
+    }
+  }
+
+  function openLightbox(name) {
+    document.getElementById('lightboxImg').src = '/api/images/' + name;
+    document.getElementById('lightbox').classList.add('open');
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
