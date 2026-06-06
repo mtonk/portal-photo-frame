@@ -5,11 +5,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import com.google.gson.Gson
 import fi.iki.elonen.NanoHTTPD
@@ -39,16 +43,58 @@ class WebServerService : Service() {
 
     private var server: FrameHttpServer? = null
     private val gson = Gson()
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var pendingResume: Runnable? = null
+
+    private val screenOnReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                Intent.ACTION_SCREEN_ON, Intent.ACTION_USER_PRESENT -> scheduleResume(context)
+            }
+        }
+    }
+
+    private fun scheduleResume(context: Context) {
+        if (!FramePreferences.shouldResumeOnWake(context)) return
+
+        pendingResume?.let { mainHandler.removeCallbacks(it) }
+        val resume = Runnable { bringMainActivityToFront(context) }
+        pendingResume = resume
+        // Portal home grabs focus on wake; resume Photos after it settles.
+        mainHandler.postDelayed(resume, 800)
+    }
+
+    private fun bringMainActivityToFront(context: Context) {
+        if (!FramePreferences.shouldResumeOnWake(context)) return
+
+        val launch = Intent(context, MainActivity::class.java).apply {
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                    or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            )
+        }
+        context.startActivity(launch)
+    }
 
     override fun onCreate() {
         super.onCreate()
         instance = this
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
+        registerReceiver(
+            screenOnReceiver,
+            IntentFilter().apply {
+                addAction(Intent.ACTION_SCREEN_ON)
+                addAction(Intent.ACTION_USER_PRESENT)
+            }
+        )
         startServer()
     }
 
     override fun onDestroy() {
+        pendingResume?.let { mainHandler.removeCallbacks(it) }
+        unregisterReceiver(screenOnReceiver)
         server?.stop()
         instance = null
         super.onDestroy()

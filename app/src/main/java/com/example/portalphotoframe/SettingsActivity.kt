@@ -2,6 +2,7 @@ package com.example.portalphotoframe
 
 import android.content.Context
 import android.os.Bundle
+import android.os.PowerManager
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
 import android.widget.Spinner
@@ -116,6 +117,14 @@ class SettingsActivity : AppCompatActivity() {
             "${seconds / 60}m ${seconds % 60}s"
         } else {
             "${seconds}s"
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (powerManager.isInteractive) {
+            FramePreferences.setResumeOnWake(this, false)
         }
     }
 

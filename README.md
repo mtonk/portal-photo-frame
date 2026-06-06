@@ -36,6 +36,8 @@ Open settings from the on-screen controls overlay to adjust:
 - Transition effect (crossfade, slide, none)
 - Shuffle order
 
+The screen follows the Portal's normal sleep timeout (display blacks out). When it wakes again, Photos returns to the foreground automatically unless you left the app intentionally (Home, another app).
+
 ## Portal constraints
 
 - **No Google Mobile Services** — Maps, Firebase, Play Services, and GMS font downloads will not work.
