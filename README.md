@@ -1,4 +1,4 @@
-# Portal Photo Frame
+# Photos
 
 A WiFi-managed photo frame for Meta Portal touch devices. Upload photos from any browser on your local network, then enjoy a full-screen slideshow on the Portal.
 
@@ -43,6 +43,7 @@ Open settings from the on-screen controls overlay to adjust:
 - **Dark theme** — Portal's system overlay is white; this app uses a dark theme by default.
 - **Top inset** — Overlays and settings reserve 64dp at the top for the system overlay strip.
 - **Touch targets** — Interactive controls are at least 52dp with 16dp spacing.
+- **Launcher icon** — Use a **512×512px PNG** in `mipmap-xxxhdpi/ic_launcher.png` only. Do not add `mipmap-mdpi` or other density buckets; Portal runs at 160dpi and Android will pick the tiny mdpi asset instead of your high-res icon. Declare `android:icon` on your launcher activity. Adaptive icons are not supported.
 
 ## Project structure
 
@@ -50,6 +51,8 @@ Open settings from the on-screen controls overlay to adjust:
 - `app/src/main/java/com/example/portalphotoframe/WebServerService.kt` — NanoHTTPD web server and REST API
 - `app/src/main/java/com/example/portalphotoframe/ImageManager.kt` — local storage, thumbnails, EXIF
 - `app/src/main/assets/web/index.html` — browser upload UI
+- `design/photo-viewer.png` — source launcher artwork (used as-is; transparency preserved)
+- `app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` — 512×512 Portal launcher icon (regenerate via `python3 scripts/generate_launcher_icons.py`)
 
 ## Reference
 

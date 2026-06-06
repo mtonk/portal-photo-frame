@@ -74,10 +74,10 @@ class WebServerService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Portal Photo Frame Web Server",
+                "Photos Web Server",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Web server for Portal Photo Frame remote control"
+                description = "Web server for Photos remote control"
             }
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
@@ -103,7 +103,7 @@ class WebServerService : Service() {
         }
 
         return builder
-            .setContentTitle("Portal Photo Frame")
+            .setContentTitle("Photos")
             .setContentText("Web UI: http://$ip:$PORT")
             .setSmallIcon(android.R.drawable.ic_menu_gallery)
             .setContentIntent(pendingIntent)

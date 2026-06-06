@@ -11,7 +11,7 @@ android {
     // Portal max compatibility — see https://developers.meta.com/horizon/documentation/android-apps/portal-development
     minSdk = 28
     targetSdk = 29
-    versionCode = 1
+    versionCode = 4
     versionName = "1.0"
   }
 
