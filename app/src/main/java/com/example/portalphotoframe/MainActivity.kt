@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PowerManager
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -92,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         WebServerService.onNext = { runOnUiThread { nextImage() } }
         WebServerService.onPrev = { runOnUiThread { prevImage() } }
         WebServerService.onRefreshImages = { runOnUiThread { loadImages() } }
+        WebServerService.onScheduleChanged = { runOnUiThread { applyKeepAlivePolicy() } }
 
         // Start web server service
         val serviceIntent = Intent(this, WebServerService::class.java)
@@ -103,17 +103,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        FramePreferences.setResumeOnWake(this, true)
-        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        applyKeepAlivePolicy()
         hideSystemUI()
         loadImages()
     }
 
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        if (powerManager.isInteractive) {
-            FramePreferences.setResumeOnWake(this, false)
+    private fun applyKeepAlivePolicy() {
+        if (FrameSchedule.shouldKeepAlive(this)) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
@@ -362,6 +361,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showControls() {
+        showSystemUI()
         val ip = getDeviceIp()
         overlayIpText.text = "http://$ip:${WebServerService.PORT}"
         controlsOverlay.visibility = View.VISIBLE
@@ -377,6 +377,39 @@ class MainActivity : AppCompatActivity() {
             controlsOverlay.visibility = View.GONE
         }.start()
         controlsVisible = false
+        hideSystemUI()
+    }
+
+    private fun showSystemUI() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.show(WindowInsets.Type.systemBars())
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            )
+        }
+    }
+
+    private fun hideSystemUI() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.let {
+                it.hide(WindowInsets.Type.systemBars())
+                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            )
+        }
     }
 
     private fun decodeSampledBitmap(file: File): Bitmap? {
@@ -424,22 +457,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun hideSystemUI() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.insetsController?.let {
-                it.hide(WindowInsets.Type.systemBars())
-                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-        } else {
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            )
-        }
-    }
 }

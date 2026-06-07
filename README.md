@@ -35,8 +35,9 @@ Open settings from the on-screen controls overlay to adjust:
 - Slide duration (3s to 5min)
 - Transition effect (crossfade, slide, none)
 - Shuffle order
+- **Scheduled quiet hours** — outside quiet hours (default 11:00 PM–7:00 AM when enabled), Photos keeps the screen on so Portal Ambient does not take over. During quiet hours the Portal may sleep or show Ambient normally. When quiet hours end, keep-alive resumes passively the next time Photos is on screen (no automatic launch or wake).
 
-The screen follows the Portal's normal sleep timeout (display blacks out). When it wakes again, Photos returns to the foreground automatically unless you left the app intentionally (Home, another app).
+With quiet hours off, the app does not override Portal display timeouts. Configure screen sleep and Ambient on the Portal itself.
 
 ## Portal constraints
 

@@ -5,4 +5,10 @@
     <string name="web_server">Web Server</string>
     <string name="no_images">No images yet.\nUpload photos from your phone or laptop on the same WiFi network.</string>
     <string name="paused">PAUSED</string>
+    <string name="quiet_hours">Quiet Hours</string>
+    <string name="quiet_hours_summary">Keep the screen on outside these hours so Portal Ambient does not take over. During quiet hours the Portal may sleep or show Ambient normally.</string>
+    <string name="quiet_hours_enable">Use scheduled quiet hours</string>
+    <string name="quiet_from">Quiet from</string>
+    <string name="quiet_until">Quiet until</string>
+    <string name="quiet_hours_passive_note">When quiet hours end, keep-alive resumes the next time Photos is on screen. The app does not launch or wake the device automatically.</string>
 </resources>

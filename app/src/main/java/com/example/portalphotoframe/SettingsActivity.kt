@@ -1,9 +1,11 @@
 package com.example.portalphotoframe
 
+import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
-import android.os.PowerManager
+import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
@@ -24,6 +26,11 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var durationSeekBar: SeekBar
     private lateinit var transitionSpinner: Spinner
     private lateinit var shuffleSwitch: SwitchMaterial
+    private lateinit var quietHoursSwitch: SwitchMaterial
+    private lateinit var quietHoursTimes: LinearLayout
+    private lateinit var quietHoursNote: TextView
+    private lateinit var btnQuietStart: MaterialButton
+    private lateinit var btnQuietEnd: MaterialButton
     private lateinit var serverUrl: TextView
     private lateinit var serverInfo: TextView
     private lateinit var imageCount: TextView
@@ -40,6 +47,11 @@ class SettingsActivity : AppCompatActivity() {
         durationSeekBar = findViewById(R.id.durationSeekBar)
         transitionSpinner = findViewById(R.id.transitionSpinner)
         shuffleSwitch = findViewById(R.id.shuffleSwitch)
+        quietHoursSwitch = findViewById(R.id.quietHoursSwitch)
+        quietHoursTimes = findViewById(R.id.quietHoursTimes)
+        quietHoursNote = findViewById(R.id.quietHoursNote)
+        btnQuietStart = findViewById(R.id.btnQuietStart)
+        btnQuietEnd = findViewById(R.id.btnQuietEnd)
         serverUrl = findViewById(R.id.serverUrl)
         serverInfo = findViewById(R.id.serverInfo)
         imageCount = findViewById(R.id.imageCount)
@@ -81,6 +93,32 @@ class SettingsActivity : AppCompatActivity() {
             prefs.edit().putBoolean("shuffle", isChecked).apply()
         }
 
+        quietHoursSwitch.isChecked = FrameSchedule.isEnabled(this)
+        updateQuietHoursUi()
+        quietHoursSwitch.setOnCheckedChangeListener { _, isChecked ->
+            FrameSchedule.setEnabled(this, isChecked)
+            updateQuietHoursUi()
+            notifyScheduleChanged()
+        }
+
+        btnQuietStart.text = FrameSchedule.formatMinutes(FrameSchedule.getStartMinutes(this))
+        btnQuietStart.setOnClickListener {
+            showTimePicker(FrameSchedule.getStartMinutes(this)) { minutes ->
+                FrameSchedule.setStartMinutes(this, minutes)
+                btnQuietStart.text = FrameSchedule.formatMinutes(minutes)
+                notifyScheduleChanged()
+            }
+        }
+
+        btnQuietEnd.text = FrameSchedule.formatMinutes(FrameSchedule.getEndMinutes(this))
+        btnQuietEnd.setOnClickListener {
+            showTimePicker(FrameSchedule.getEndMinutes(this)) { minutes ->
+                FrameSchedule.setEndMinutes(this, minutes)
+                btnQuietEnd.text = FrameSchedule.formatMinutes(minutes)
+                notifyScheduleChanged()
+            }
+        }
+
         // Server info
         val webService = WebServerService.instance
         if (webService != null) {
@@ -111,20 +149,33 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateQuietHoursUi() {
+        val enabled = quietHoursSwitch.isChecked
+        val visibility = if (enabled) View.VISIBLE else View.GONE
+        quietHoursTimes.visibility = visibility
+        quietHoursNote.visibility = visibility
+    }
+
+    private fun showTimePicker(currentMinutes: Int, onSelected: (Int) -> Unit) {
+        TimePickerDialog(
+            this,
+            { _, hour, minute -> onSelected(hour * 60 + minute) },
+            currentMinutes / 60,
+            currentMinutes % 60,
+            false
+        ).show()
+    }
+
+    private fun notifyScheduleChanged() {
+        WebServerService.onScheduleChanged?.invoke()
+    }
+
     private fun updateDurationLabel(index: Int) {
         val seconds = DURATION_OPTIONS[index]
         durationValue.text = if (seconds >= 60) {
             "${seconds / 60}m ${seconds % 60}s"
         } else {
             "${seconds}s"
-        }
-    }
-
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        if (powerManager.isInteractive) {
-            FramePreferences.setResumeOnWake(this, false)
         }
     }
 

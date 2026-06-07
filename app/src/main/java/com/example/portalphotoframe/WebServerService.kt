@@ -36,45 +36,57 @@ class WebServerService : Service() {
         var onNext: (() -> Unit)? = null
         var onPrev: (() -> Unit)? = null
         var onRefreshImages: (() -> Unit)? = null
+        var onScheduleChanged: (() -> Unit)? = null
         var isPlaying: Boolean = true
         var currentImageIndex: Int = 0
         var totalImages: Int = 0
+
+        private fun bringMainActivityToFront(context: Context) {
+            val launch = Intent(context, MainActivity::class.java).apply {
+                addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK
+                        or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                )
+            }
+            context.startActivity(launch)
+        }
     }
 
     private var server: FrameHttpServer? = null
     private val gson = Gson()
     private val mainHandler = Handler(Looper.getMainLooper())
     private var pendingResume: Runnable? = null
+    private var pendingScreenOffResume = false
 
-    private val screenOnReceiver = object : BroadcastReceiver() {
+    private val scheduleCheckRunnable = object : Runnable {
+        override fun run() {
+            onScheduleChanged?.invoke()
+            mainHandler.postDelayed(this, 60_000L)
+        }
+    }
+
+    private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
-                Intent.ACTION_SCREEN_ON, Intent.ACTION_USER_PRESENT -> scheduleResume(context)
+                Intent.ACTION_SCREEN_OFF -> pendingScreenOffResume = true
+                Intent.ACTION_SCREEN_ON -> {
+                    if (!pendingScreenOffResume) return
+                    pendingScreenOffResume = false
+                    if (FrameSchedule.shouldKeepAlive(context)) {
+                        scheduleResume(context)
+                    }
+                }
             }
         }
     }
 
     private fun scheduleResume(context: Context) {
-        if (!FramePreferences.shouldResumeOnWake(context)) return
-
         pendingResume?.let { mainHandler.removeCallbacks(it) }
         val resume = Runnable { bringMainActivityToFront(context) }
         pendingResume = resume
         // Portal home grabs focus on wake; resume Photos after it settles.
         mainHandler.postDelayed(resume, 800)
-    }
-
-    private fun bringMainActivityToFront(context: Context) {
-        if (!FramePreferences.shouldResumeOnWake(context)) return
-
-        val launch = Intent(context, MainActivity::class.java).apply {
-            addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK
-                    or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            )
-        }
-        context.startActivity(launch)
     }
 
     override fun onCreate() {
@@ -83,18 +95,20 @@ class WebServerService : Service() {
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
         registerReceiver(
-            screenOnReceiver,
+            screenReceiver,
             IntentFilter().apply {
+                addAction(Intent.ACTION_SCREEN_OFF)
                 addAction(Intent.ACTION_SCREEN_ON)
-                addAction(Intent.ACTION_USER_PRESENT)
             }
         )
         startServer()
+        mainHandler.postDelayed(scheduleCheckRunnable, 60_000L)
     }
 
     override fun onDestroy() {
+        mainHandler.removeCallbacks(scheduleCheckRunnable)
         pendingResume?.let { mainHandler.removeCallbacks(it) }
-        unregisterReceiver(screenOnReceiver)
+        unregisterReceiver(screenReceiver)
         server?.stop()
         instance = null
         super.onDestroy()
