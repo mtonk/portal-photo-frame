@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="portal_background">#1A1A1A</color>
+    <color name="portal_surface">#2B2B2B</color>
+    <color name="portal_surface_elevated">#353535</color>
+    <color name="portal_border">#454545</color>
+    <color name="portal_primary">#0866FF</color>
+    <!-- portal-samples NeutralGreyDark — switch track off -->
+    <color name="portal_switch_track_off">#5A6375</color>
+    <color name="portal_text_body">#DADADA</color>
+    <color name="portal_text_on_primary">#F0F0F0</color>
+    <color name="portal_text_dim">#C8C8C8</color>
+    <color name="portal_scrim">#CC1A1A1A</color>
+    <color name="portal_danger">#E57373</color>
+</resources>

@@ -3,4 +3,10 @@
     <!-- Meta Portal system overlay occupies the top 64dp -->
     <dimen name="portal_system_overlay_padding">64dp</dimen>
     <dimen name="portal_touch_target_size">52dp</dimen>
+    <dimen name="portal_content_padding">16dp</dimen>
+    <dimen name="portal_section_spacing">16dp</dimen>
+    <dimen name="portal_item_spacing">8dp</dimen>
+    <dimen name="settings_card_padding">20dp</dimen>
+    <dimen name="settings_card_radius">12dp</dimen>
+    <dimen name="settings_card_gap">20dp</dimen>
 </resources>

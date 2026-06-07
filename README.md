@@ -41,10 +41,10 @@ With quiet hours off, the app does not override Portal display timeouts. Configu
 
 ## Portal constraints
 
-- **No Google Mobile Services** — Maps, Firebase, Play Services, and GMS font downloads will not work.
+- **No Google Mobile Services** — Maps, Firebase, and Play Services will not work. Inter is bundled locally (portal-samples uses GMS downloadable fonts, which are unavailable on Portal).
 - **SDK versions** — `minSdk 28`, `targetSdk 29` for maximum Portal compatibility.
-- **Dark theme** — Portal's system overlay is white; this app uses a dark theme by default.
-- **Top inset** — Overlays and settings reserve 64dp at the top for the system overlay strip.
+- **Portal design system** — Bundled Inter typeface (same weights as [portal-samples](https://github.com/meta-quest/portal-samples)), Meta palette (`#1A1A1A` / `#2B2B2B` / `#0866FF` / `#DADADA`), 52dp touch targets, and 16dp spacing per [design requirements](https://developers.meta.com/horizon/documentation/android-apps/portal-design-requirements/).
+- **Top inset** — Overlays and settings reserve 64dp at the top for the system overlay strip. The slideshow stays immersive fullscreen (overlay hidden until edge swipe).
 - **Touch targets** — Interactive controls are at least 52dp with 16dp spacing.
 - **Launcher icon** — Use a **512×512px PNG** in `mipmap-xxxhdpi/ic_launcher.png` only. Do not add `mipmap-mdpi` or other density buckets; Portal runs at 160dpi and Android will pick the tiny mdpi asset instead of your high-res icon. Declare `android:icon` on your launcher activity. Adaptive icons are not supported.
 

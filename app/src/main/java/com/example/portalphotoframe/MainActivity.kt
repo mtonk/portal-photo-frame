@@ -10,8 +10,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.WindowInsets
+import kotlin.math.abs
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.view.animation.AlphaAnimation
@@ -45,6 +48,11 @@ class MainActivity : AppCompatActivity() {
     private var controlsVisible = false
     private var shuffledIndices = listOf<Int>()
 
+    private var touchStartX = 0f
+    private var touchStartY = 0f
+    private var touchSlop = 0
+    private var swipeThreshold = 0f
+
     private val hideControlsRunnable = Runnable { hideControls() }
 
     private val slideshowRunnable = object : Runnable {
@@ -72,11 +80,12 @@ class MainActivity : AppCompatActivity() {
         serverUrlText = findViewById(R.id.serverUrlText)
         overlayIpText = findViewById(R.id.overlayIpText)
 
-        // Touch to show/hide controls
-        val rootView = findViewById<FrameLayout>(android.R.id.content)
-        rootView.setOnClickListener { toggleControls() }
-        imageView.setOnClickListener { toggleControls() }
-        imageViewNext.setOnClickListener { toggleControls() }
+        touchSlop = ViewConfiguration.get(this).scaledTouchSlop
+        swipeThreshold = resources.displayMetrics.widthPixels * 0.12f
+
+        val photoTouchListener = View.OnTouchListener { _, event -> handlePhotoTouch(event) }
+        findViewById<FrameLayout>(R.id.photoTouchArea).setOnTouchListener(photoTouchListener)
+        emptyState.setOnTouchListener(photoTouchListener)
 
         // Control buttons
         findViewById<ImageButton>(R.id.btnPrev).setOnClickListener { prevImage() }
@@ -227,7 +236,7 @@ class MainActivity : AppCompatActivity() {
         WebServerService.currentImageIndex = currentIndex
     }
 
-    private fun transitionToNext(file: File) {
+    private fun transitionToImage(file: File, forward: Boolean) {
         val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
         val transition = prefs.getString("transition", "crossfade") ?: "crossfade"
 
@@ -262,8 +271,11 @@ class MainActivity : AppCompatActivity() {
                     imageViewNext.setImageBitmap(bitmap)
                     imageViewNext.alpha = 1f
 
+                    val slideInFrom = if (forward) 1f else -1f
+                    val slideOutTo = if (forward) -1f else 1f
+
                     val slideIn = TranslateAnimation(
-                        Animation.RELATIVE_TO_PARENT, 1f,
+                        Animation.RELATIVE_TO_PARENT, slideInFrom,
                         Animation.RELATIVE_TO_PARENT, 0f,
                         Animation.RELATIVE_TO_PARENT, 0f,
                         Animation.RELATIVE_TO_PARENT, 0f
@@ -271,7 +283,7 @@ class MainActivity : AppCompatActivity() {
 
                     val slideOut = TranslateAnimation(
                         Animation.RELATIVE_TO_PARENT, 0f,
-                        Animation.RELATIVE_TO_PARENT, -1f,
+                        Animation.RELATIVE_TO_PARENT, slideOutTo,
                         Animation.RELATIVE_TO_PARENT, 0f,
                         Animation.RELATIVE_TO_PARENT, 0f
                     ).apply {
@@ -314,7 +326,7 @@ class MainActivity : AppCompatActivity() {
             currentIndex
         }
 
-        transitionToNext(imageFiles[mappedIndex])
+        transitionToImage(imageFiles[mappedIndex], forward = true)
     }
 
     private fun prevImage() {
@@ -327,7 +339,32 @@ class MainActivity : AppCompatActivity() {
             currentIndex
         }
 
-        showCurrentImage()
+        transitionToImage(imageFiles[mappedIndex], forward = false)
+    }
+
+    private fun handlePhotoTouch(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                touchStartX = event.x
+                touchStartY = event.y
+            }
+            MotionEvent.ACTION_UP -> {
+                val dx = event.x - touchStartX
+                val dy = event.y - touchStartY
+                if (abs(dx) > abs(dy) && abs(dx) >= swipeThreshold) {
+                    if (imageFiles.isNotEmpty()) {
+                        if (dx < 0) nextImage() else prevImage()
+                        if (isPlaying) schedulNext()
+                    }
+                    return true
+                }
+                if (abs(dx) <= touchSlop && abs(dy) <= touchSlop) {
+                    toggleControls()
+                    return true
+                }
+            }
+        }
+        return true
     }
 
     private fun togglePlayPause() {

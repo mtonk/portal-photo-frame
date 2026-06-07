@@ -2,7 +2,13 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="@color/portal_background">
+
+    <!-- Captures tap and horizontal swipes for controls / prev-next -->
+    <FrameLayout
+        android:id="@+id/photoTouchArea"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <!-- Current slideshow image (full-bleed) -->
     <ImageView
@@ -21,6 +27,8 @@
         android:alpha="0"
         android:contentDescription="Next slideshow image" />
 
+    </FrameLayout>
+
     <!-- Empty state (offset below Portal system overlay) -->
     <LinearLayout
         android:id="@+id/emptyState"
@@ -30,6 +38,8 @@
         android:orientation="vertical"
         android:gravity="center"
         android:paddingTop="@dimen/portal_system_overlay_padding"
+        android:paddingStart="@dimen/portal_content_padding"
+        android:paddingEnd="@dimen/portal_content_padding"
         android:visibility="visible">
 
         <TextView
@@ -42,19 +52,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/no_images"
-            android:textColor="#AAAAAA"
-            android:textSize="18sp"
+            android:textAppearance="@style/TextAppearance.Portal.Body"
             android:gravity="center"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="@dimen/portal_section_spacing" />
 
         <TextView
             android:id="@+id/serverUrlText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#03DAC5"
-            android:textSize="20sp"
+            android:textAppearance="@style/TextAppearance.Portal.Accent"
             android:gravity="center"
-            android:layout_marginTop="24dp" />
+            android:layout_marginTop="@dimen/portal_section_spacing" />
     </LinearLayout>
 
     <!-- Pause indicator -->
@@ -64,12 +72,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top|center_horizontal"
         android:layout_marginTop="@dimen/portal_system_overlay_padding"
-        android:background="#80000000"
+        android:background="@color/portal_scrim"
         android:paddingHorizontal="24dp"
-        android:paddingVertical="8dp"
+        android:paddingVertical="@dimen/portal_item_spacing"
         android:text="@string/paused"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
+        android:textAppearance="@style/TextAppearance.Portal.Body"
+        android:textColor="@color/portal_text_on_primary"
         android:visibility="gone" />
 
     <!-- Image counter -->
@@ -78,12 +86,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:background="#80000000"
+        android:layout_margin="@dimen/portal_content_padding"
+        android:background="@color/portal_scrim"
         android:paddingHorizontal="12dp"
-        android:paddingVertical="4dp"
-        android:textColor="#AAAAAA"
-        android:textSize="12sp"
+        android:paddingVertical="@dimen/portal_item_spacing"
+        android:textAppearance="@style/TextAppearance.Portal.Caption"
+        android:textColor="@color/portal_text_body"
         android:visibility="gone" />
 
     <!-- Overlay controls (shown on tap) -->
@@ -92,10 +100,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="#80000000"
+        android:background="@color/portal_scrim"
         android:gravity="center"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:padding="@dimen/portal_content_padding"
         android:visibility="gone">
 
         <ImageButton
@@ -104,8 +112,9 @@
             android:layout_height="@dimen/portal_touch_target_size"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_media_previous"
+            android:tint="@color/portal_text_on_primary"
             android:contentDescription="Previous"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="@dimen/portal_section_spacing" />
 
         <ImageButton
             android:id="@+id/btnPlayPause"
@@ -113,8 +122,9 @@
             android:layout_height="@dimen/portal_touch_target_size"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_media_pause"
+            android:tint="@color/portal_text_on_primary"
             android:contentDescription="Play/Pause"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="@dimen/portal_section_spacing" />
 
         <ImageButton
             android:id="@+id/btnNext"
@@ -122,8 +132,9 @@
             android:layout_height="@dimen/portal_touch_target_size"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_media_next"
+            android:tint="@color/portal_text_on_primary"
             android:contentDescription="Next"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="@dimen/portal_section_spacing" />
 
         <ImageButton
             android:id="@+id/btnSettings"
@@ -131,15 +142,16 @@
             android:layout_height="@dimen/portal_touch_target_size"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_preferences"
+            android:tint="@color/portal_text_on_primary"
             android:contentDescription="Settings"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="@dimen/portal_section_spacing" />
 
         <TextView
             android:id="@+id/overlayIpText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#03DAC5"
-            android:textSize="13sp" />
+            android:textAppearance="@style/TextAppearance.Portal.Caption"
+            android:textColor="@color/portal_primary" />
     </LinearLayout>
 
 </FrameLayout>

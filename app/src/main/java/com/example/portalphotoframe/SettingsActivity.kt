@@ -2,8 +2,10 @@ package com.example.portalphotoframe
 
 import android.app.TimePickerDialog
 import android.content.Context
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
+import androidx.core.content.ContextCompat
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -40,8 +42,11 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Settings"
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = "Settings"
+            setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(this@SettingsActivity, R.color.portal_background)))
+        }
 
         durationValue = findViewById(R.id.durationValue)
         durationSeekBar = findViewById(R.id.durationSeekBar)
@@ -76,7 +81,11 @@ class SettingsActivity : AppCompatActivity() {
         })
 
         // Transition
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, TRANSITION_OPTIONS)
+        val adapter = ArrayAdapter(
+            this,
+            R.layout.spinner_item,
+            TRANSITION_OPTIONS
+        ).also { it.setDropDownViewResource(R.layout.spinner_dropdown_item) }
         transitionSpinner.adapter = adapter
         val currentTransition = prefs.getString("transition", "crossfade") ?: "crossfade"
         transitionSpinner.setSelection(TRANSITION_OPTIONS.indexOf(currentTransition).coerceAtLeast(0))
