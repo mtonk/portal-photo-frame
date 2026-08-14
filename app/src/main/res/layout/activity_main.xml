@@ -73,10 +73,12 @@
         android:layout_gravity="bottom|start"
         android:layout_marginStart="24dp"
         android:layout_marginBottom="24dp"
-        android:background="#80000000"
+        android:background="@color/portal_scrim"
+        android:fontFamily="@font/inter_medium"
         android:paddingHorizontal="24dp"
         android:paddingVertical="12dp"
-        android:textColor="#AAAAAA"
+        android:textAppearance="@style/TextAppearance.Portal.Body"
+        android:textColor="@color/portal_text_body"
         android:textSize="56sp" />
 
     <!-- Pause indicator -->
