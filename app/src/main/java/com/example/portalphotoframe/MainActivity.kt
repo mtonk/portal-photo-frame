@@ -11,6 +11,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.MotionEvent
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.WindowInsets
@@ -40,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnPlayPause: ImageButton
     private lateinit var serverUrlText: TextView
     private lateinit var overlayIpText: TextView
+    private lateinit var clockText: TextView
 
     private val handler = Handler(Looper.getMainLooper())
     private var imageFiles = listOf<File>()
@@ -64,6 +68,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val clockRunnable = object : Runnable {
+        override fun run() {
+            updateClock()
+            handler.postDelayed(this, 1000)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -79,6 +90,10 @@ class MainActivity : AppCompatActivity() {
         btnPlayPause = findViewById(R.id.btnPlayPause)
         serverUrlText = findViewById(R.id.serverUrlText)
         overlayIpText = findViewById(R.id.overlayIpText)
+        clockText = findViewById(R.id.clockText)
+
+        updateClock()
+        handler.postDelayed(clockRunnable, 1000)
 
         touchSlop = ViewConfiguration.get(this).scaledTouchSlop
         swipeThreshold = resources.displayMetrics.widthPixels * 0.12f
@@ -492,6 +507,12 @@ class MainActivity : AppCompatActivity() {
         } else {
             "Not connected to WiFi"
         }
+    }
+
+private fun updateClock() {
+        val now = Calendar.getInstance()
+        val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+        clockText.text = timeFormat.format(now.time)
     }
 
 }

@@ -14,7 +14,7 @@ Based on [MrOplus/DigitalFrame](https://github.com/MrOplus/DigitalFrame) (MIT Li
 ## Build & Deploy
 
 ```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@17   # if needed
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21   # if needed
 ./gradlew assembleDebug
 hzdb app install app/build/outputs/apk/debug/app-debug.apk --replace
 hzdb app launch com.example.portalphotoframe

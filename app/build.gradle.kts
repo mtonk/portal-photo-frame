@@ -2,6 +2,8 @@ plugins {
   alias(libs.plugins.android.application)
 }
 
+import java.util.Properties
+
 android {
   namespace = "com.example.portalphotoframe"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
@@ -15,10 +17,28 @@ android {
     versionName = "1.0"
   }
 
+  signingConfigs {
+    create("portal") {
+      val props = Properties()
+      val propsFile = rootProject.file("signing/keystore.properties")
+      if (propsFile.exists()) {
+        props.load(propsFile.inputStream())
+        storeFile = rootProject.file(props.getProperty("storeFile"))
+        storePassword = props.getProperty("storePassword")
+        keyAlias = props.getProperty("keyAlias")
+        keyPassword = props.getProperty("keyPassword")
+      }
+    }
+  }
+
   buildTypes {
     release {
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      signingConfig = signingConfigs.getByName("portal")
+    }
+    debug {
+      signingConfig = signingConfigs.getByName("portal")
     }
   }
 

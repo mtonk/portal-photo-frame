@@ -65,6 +65,20 @@
             android:layout_marginTop="@dimen/portal_section_spacing" />
     </LinearLayout>
 
+    <!-- Clock (lower-left corner) -->
+    <TextView
+        android:id="@+id/clockText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="24dp"
+        android:layout_marginBottom="24dp"
+        android:background="#80000000"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="12dp"
+        android:textColor="#AAAAAA"
+        android:textSize="56sp" />
+
     <!-- Pause indicator -->
     <TextView
         android:id="@+id/pauseIndicator"
